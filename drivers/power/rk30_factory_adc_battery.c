@@ -808,7 +808,7 @@ static int rk_adc_voltage(struct rk30_adc_battery_data *bat, int value)
 
 }
 
-#if defined(CONFIG_MFD_TRS65910)	//for trs65910 Transilicon peter
+#if defined(CONFIG_MFD_TRS65910)	//for trs65910 Trsilicon peter
 //low power shutdown
 void checklowpowershutdown(void)
 {

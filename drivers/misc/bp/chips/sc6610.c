@@ -190,6 +190,17 @@ struct bp_operate bp_sc6610_ops = {
 	.bp_uart_en		= BP_UNKNOW_DATA, 	//EINT9
 	.bp_usb_en		= BP_UNKNOW_DATA, 	//W_disable
 	.bp_assert		= SN7325_PP3,
+#else
+	.bp_power		= RK2928_PIN3_PD6, 	// 3g_power
+	.bp_en			= BP_UNKNOW_DATA,	// 3g_en
+	.bp_reset			= BP_UNKNOW_DATA,
+	.ap_ready		= RK2928_PIN0_PD6,	//
+	.bp_ready		= RK2928_PIN3_PD5,
+	.ap_wakeup_bp	= RK2928_PIN1_PA4,
+	.bp_wakeup_ap	= RK2928_PIN1_PA2,	
+	.bp_uart_en		= BP_UNKNOW_DATA, 	//EINT9
+	.bp_usb_en		= BP_UNKNOW_DATA, 	//W_disable
+	.bp_assert		= BP_UNKNOW_DATA,
 #endif
 	.trig				= IRQF_TRIGGER_RISING,
 

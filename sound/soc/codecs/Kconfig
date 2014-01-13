@@ -81,6 +81,7 @@ config SND_SOC_ALL_CODECS
 	select SND_SOC_RT5621 if I2C
 	select SND_SOC_RT5631 if I2C
 	select SND_SOC_RT5631_PHONE if I2C
+	select SND_SOC_RK3028A_PHONE if I2C
 	select SND_SOC_RT5625 if I2C
 	select SND_SOC_RT3261 if I2C
 	select SND_SOC_RT3224 if I2C
@@ -455,5 +456,9 @@ config SND_SOC_RK2928
 	depends on ARCH_RK2928
 
 config SND_SOC_RK3026
+	tristate
+	depends on ARCH_RK3026
+
+config SND_SOC_RK3028A_PHONE
 	tristate
 	depends on ARCH_RK3026

@@ -50,7 +50,7 @@ module_param(debug, int, S_IRUGO|S_IWUSR);
  *  31: 6dB
  *  Step: 1.5dB
 */
-#define  OUT_VOLUME    24//31//0~31
+#define  OUT_VOLUME    24//0~31
 
 
 /* capture vol set

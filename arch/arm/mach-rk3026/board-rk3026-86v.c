@@ -277,7 +277,7 @@ static int rk29_backlight_pwm_resume(void)
 	gpio_free(pwm_gpio_vcom);
 	printk("####liufeng####:%s[%d],\n",__func__,__LINE__);
 	iomux_set(pwm_mode[1]);
-	msleep(30);
+	msleep(500);//30);
 	iomux_set(pwm_mode[BL_PWM]);
 #ifdef  LCD_DISP_ON_PIN
 	msleep(30);
@@ -1772,6 +1772,123 @@ static struct platform_device rk_device_gps = {
 		}
 	};
 #endif
+#if defined (CONFIG_TOUCHSCREEN_ZET62XX)
+/*
+important notice: zet62xx in charge mode 
+ must define the function get_system_charge_status
+*/
+#define TS_RST_GPIO   RK2928_PIN3_PC1
+#define TS_INT_GPIO   RK2928_PIN1_PB0
+extern int dwc_vbus_status(void);
+static int zet62xx_init_platform_hw(void)
+{
+	if(TS_RST_GPIO!=INVALID_GPIO){
+	  if(gpio_request(TS_RST_GPIO,"ts_rst_gpio")!= 0){
+			gpio_free(TS_RST_GPIO);
+			printk("zet62xx_init_platform_hw rst_gpio gpio_request error\n");
+			return -EIO;
+		}   
+		gpio_direction_output(TS_RST_GPIO, GPIO_HIGH);
+	}
+	return 0;
+}
+
+/*detect system charge status.
+ *return:   1:charging 0:not charging
+*/
+static int zet62xx_get_charge_status(void)
+{
+	int val0=0,val1=0,val2=0;
+	#ifdef CONFIG_BATTERY_RK30_ADC_FAC
+	if(rk30_adc_battery_platdata.is_dc_charging){
+		val0=rk30_adc_battery_platdata.is_dc_charging();
+	}
+	if(rk30_adc_battery_platdata.dc_det_pin!=INVALID_GPIO){
+		val1=(gpio_get_value(rk30_adc_battery_platdata.dc_det_pin)==rk30_adc_battery_platdata.dc_det_level)?1:0;
+	}
+	#ifdef CONFIG_BATTERY_RK30_USB_CHARGE
+	{
+		val2=dwc_vbus_status()!=0?1:0;
+	}
+	#endif
+  #endif
+	return val0|val1|val2;
+}
+	struct zet62xx_platform_data  zet62xx_info = {
+		.reset_gpio = TS_RST_GPIO,
+		.irq_gpio   = TS_INT_GPIO,
+		.init_platform_hw = zet62xx_init_platform_hw,
+	#ifdef CONFIG_BATTERY_RK30_ADC_FAC
+		.get_system_charge_status=zet62xx_get_charge_status,
+	#endif
+	};
+#endif
+
+#if defined(CONFIG_TOUCHSCREEN_AW5209)
+/*important notice :use the aw5x0x,when system  suspend,vcc_tp can not be closed.if vcc_tp is closed,
+suspend current will be too large.
+RK3026 use pmu tps65910,
+board-pmu-tps65910.c
+must modify 
+#if defined (CONFIG_ARCH_RK3026)
+	val |= 0x0b;
+#else	
+	val |= 0x0b;
+#endif
+avoid vcc_tp is closed when system suspend.
+*/
+#define TOUCH_RESET_PIN RK30_PIN3_PC3
+#define TOUCH_INT_PIN   RK30_PIN3_PC7
+extern int dwc_vbus_status(void);
+static int aw5x0x_init_platform_hw(void)
+{
+	if(TOUCH_RESET_PIN!=INVALID_GPIO){
+	  if(gpio_request(TOUCH_RESET_PIN,NULL)!= 0){
+			gpio_free(TOUCH_RESET_PIN);
+			printk("aw5x0x_init_platform_hw rst_gpio gpio_request error\n");
+			return -EIO;
+		}     
+		gpio_direction_output(TOUCH_RESET_PIN,GPIO_HIGH);
+		msleep(10);
+		gpio_set_value(TOUCH_RESET_PIN,GPIO_LOW);
+		msleep(100);
+		gpio_set_value(TOUCH_RESET_PIN,GPIO_HIGH);
+		msleep(10);
+	}
+	return 0;
+}
+
+/*detect system charge status.
+ *return:   1:charging 0:not charging
+*/
+static int aw5x0x_get_charge_status(void)
+{
+	int val0=0,val1=0,val2=0;
+	#ifdef CONFIG_BATTERY_RK30_ADC_FAC
+	if(rk30_adc_battery_platdata.is_dc_charging){
+		val0=rk30_adc_battery_platdata.is_dc_charging();
+	}
+	if(rk30_adc_battery_platdata.dc_det_pin!=INVALID_GPIO){
+		val1=(gpio_get_value(rk30_adc_battery_platdata.dc_det_pin)==rk30_adc_battery_platdata.dc_det_level)?1:0;
+	}
+	#ifdef CONFIG_BATTERY_RK30_USB_CHARGE
+	{
+		val2=dwc_vbus_status()!=0?1:0;
+	}
+	#endif
+  #endif
+	return val0|val1|val2;
+}
+
+struct aw5x0x_platform_data  aw5x0x_info = {
+		.reset_gpio = TOUCH_RESET_PIN,
+		.irq_gpio = TOUCH_INT_PIN,
+		.init_platform_hw = aw5x0x_init_platform_hw,
+	  #ifdef CONFIG_BATTERY_RK30_ADC_FAC	
+		.get_system_charge_status=aw5x0x_get_charge_status,
+		#endif
+};
+#endif
 /***********************************************************
 *	i2c
 ************************************************************/
@@ -1868,6 +1985,15 @@ static struct i2c_board_info __initdata i2c0_info[] = {
 #endif
 };
 #endif
+#if defined(CONFIG_TOUCHSCREEN_ZET62XX)
+        {
+                .type          = "zet6221-ts",
+                .addr          = 0x76,
+                .flags         = 0,
+                .irq           = TS_INT_GPIO,
+                .platform_data = &zet62xx_info,
+        },
+#endif
 
 #ifdef CONFIG_I2C1_RK30
 static struct i2c_board_info __initdata i2c1_info[] = {
@@ -1955,6 +2081,14 @@ static struct i2c_board_info __initdata i2c1_info[] = {
 	},
 #endif
 
+#if defined (CONFIG_TOUCHSCREEN_AW5209)
+    {
+        .type           = "aw5306_ts",
+        .addr           = 0x38,
+        .flags          = 0,
+        .platform_data  = &aw5x0x_info,
+    },
+#endif
 };
 #endif
 
@@ -2150,46 +2284,18 @@ static void __init rk30_reserve(void)
 	board_mem_reserved();
 }
 
-/******************for trs65910 Trsilicon peter ************************/
-static struct cpufreq_frequency_table dvfs_arm_table_v0_trs[] = {
-	{.frequency = 312 * 1000,       .index = 1250 * 1000},
-	{.frequency = 504 * 1000,       .index = 1250 * 1000},
-	{.frequency = 816 * 1000,       .index = 1350 * 1000},
-	{.frequency = 912 * 1000,       .index = 1450 * 1000},
-	{.frequency = 1008 * 1000,      .index = 1450 * 1000},
-	//{.frequency = 1200 * 1000,      .index = 1200 * 1000},
-	//{.frequency = 1416 * 1000,      .index = 1200 * 1000},
-	//{.frequency = 1608 * 1000,      .index = 1200 * 1000},
-	{.frequency = CPUFREQ_TABLE_END},
-};
-/******************for trs65910 Trsilicon peter ************************/
-static struct cpufreq_frequency_table dvfs_arm_table_v1_trs[] = {
-	{.frequency = 312 * 1000,       .index = 1300 * 1000},
-	{.frequency = 504 * 1000,       .index = 1300 * 1000},
-	{.frequency = 816 * 1000,       .index = 1350 * 1000},
-	{.frequency = 912 * 1000,       .index = 1450 * 1000},
-	{.frequency = 1008 * 1000,      .index = 1450 * 1000},
-	//{.frequency = 1200 * 1000,      .index = 1200 * 1000},
-	//{.frequency = 1416 * 1000,      .index = 1200 * 1000},
-	//{.frequency = 1608 * 1000,      .index = 1200 * 1000},
-	{.frequency = CPUFREQ_TABLE_END},
-};
-
-static struct cpufreq_frequency_table dvfs_arm_table_v0[] = {
-	{.frequency = 312 * 1000,       .index = 1200 * 1000},
-	{.frequency = 504 * 1000,       .index = 1200 * 1000},
-	{.frequency = 816 * 1000,       .index = 1250 * 1000},
-	{.frequency = 912 * 1000,       .index = 1350 * 1000},
-	{.frequency = 1008 * 1000,      .index = 1350 * 1000},
-	{.frequency = CPUFREQ_TABLE_END},
-};
-
-static struct cpufreq_frequency_table dvfs_arm_table_v1[] = {
+/***********************************************************
+*	clock
+************************************************************/
+static struct cpufreq_frequency_table dvfs_arm_table[] = {
 	{.frequency = 312 * 1000,       .index = 950 * 1000},
-	{.frequency = 504 * 1000,       .index = 1050 * 1000},
-	{.frequency = 816 * 1000,       .index = 1275 * 1000},
-	{.frequency = 912 * 1000,       .index = 1350 * 1000},
-	{.frequency = 1008 * 1000,      .index = 1400 * 1000},
+	{.frequency = 504 * 1000,       .index = 1000 * 1000},
+	{.frequency = 816 * 1000,       .index = 1200 * 1000},
+	{.frequency = 912 * 1000,       .index = 1250 * 1000},
+	{.frequency = 1008 * 1000,      .index = 1350 * 1000},
+	//{.frequency = 1200 * 1000,      .index = 1200 * 1000},
+	//{.frequency = 1416 * 1000,      .index = 1200 * 1000},
+	//{.frequency = 1608 * 1000,      .index = 1200 * 1000},
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
@@ -2207,36 +2313,14 @@ static struct cpufreq_frequency_table dvfs_ddr_table[] = {
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
-#define RK3026_SOC_V0 0x00
-#define RK3026_SOC_V1 0x01
-
+extern void adjust_dvfs_table(int soc_version, struct cpufreq_frequency_table *table);
 void __init board_clock_init(void)
 {
 	rk2928_clock_data_init(periph_pll_default, codec_pll_default, RK30_CLOCKS_DEFAULT_FLAGS);
 	//dvfs_set_arm_logic_volt(dvfs_cpu_logic_table, cpu_dvfs_table, dep_cpu2core_table);	
-
 	printk(KERN_INFO "rk3026 soc version:%d\n", rk3026_version_val());
- 	if (rk3026_version_val() == RK3026_SOC_V1)
-	{
-#if defined(CONFIG_MFD_TRS65910)	//for trs65910 Trsilicon peter
-		dvfs_set_freq_volt_table(clk_get(NULL, "cpu"), dvfs_arm_table_v1_trs);
-		printk(KERN_INFO "****dvfs_arm_table_v1_trs*****\n");
-#else
-		dvfs_set_freq_volt_table(clk_get(NULL, "cpu"), dvfs_arm_table_v1);
-		printk(KERN_INFO "****dvfs_arm_table_v1*****\n");
-#endif
-	}
-	else
-	{
-#if defined(CONFIG_MFD_TRS65910)	//for trs65910 Trsilicon peter
-		dvfs_set_freq_volt_table(clk_get(NULL, "cpu"), dvfs_arm_table_v0_trs);
-		printk(KERN_INFO "****dvfs_arm_table_v0_trs*****\n");
-#else
-		dvfs_set_freq_volt_table(clk_get(NULL, "cpu"), dvfs_arm_table_v0);
-		printk(KERN_INFO "****dvfs_arm_table_v0*****\n");
-#endif
-	}
-
+	adjust_dvfs_table(rk3026_version_val(), dvfs_arm_table);
+	dvfs_set_freq_volt_table(clk_get(NULL, "cpu"), dvfs_arm_table);
 	dvfs_set_freq_volt_table(clk_get(NULL, "gpu"), dvfs_gpu_table);
 	dvfs_set_freq_volt_table(clk_get(NULL, "ddr"), dvfs_ddr_table);
 }

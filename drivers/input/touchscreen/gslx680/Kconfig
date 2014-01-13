@@ -26,6 +26,9 @@ choice
 	config TOUCHSCREEN_GSL3670_9INCH_98v_800x480_YILIDA
 		bool "touchscreen gsl3670 9 inch 800x480 (YiLiDa)for 98v"
 		
+	config TOUCHSCREEN_GSL3670_9INCH_98v_800x480_HONGHAI
+		bool "touchscreen gsl3670 9 inch 800x480 (HongHai)for 98v"
+		
 	config TOUCHSCREEN_GSL3670_9INCH_98v_1024x600_YOUCHU
 		bool "touchscreen gsl3670 9 inch 1024x600 (YouChu) for 98v"
   	
@@ -64,6 +67,9 @@ choice
 	
 	config TOUCHSCREEN_GSL1680_7INCH_800x480_HAOYUAN
   	bool "7 inch 800x480(Hao Yuan)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_SHUOYING
+  	bool "7 inch 800x480(Shuo Ying)"
 	
 	config TOUCHSCREEN_GSL1680_7INCH_1024x600_YOUCHU
   	bool "7 inch 1024x600(You Chu)"
@@ -114,54 +120,14 @@ choice
     depends on TOUCHSCREEN_GSL1680_NEW
 	prompt  "Touch Screen Select"
 
-	config TOUCHSCREEN_GSL1680_7INCH_800x480_LEHENG_NEW
-  	bool "7 inch 800x480(Le Heng)"
-	
-	config TOUCHSCREEN_GSL1680_7INCH_800x480_SHENGHEXIANG_NEW
-  	bool "7 inch 800x480(Sheng He Xiang)"
-	
-	config TOUCHSCREEN_GSL1680_7INCH_800x480_SHENGHEXIANG_QLT_NEW
-  	bool "7 inch 800x480(Sheng He Xiang for QiLeTong)"
-	
-	config TOUCHSCREEN_GSL1680_7INCH_800x480_YOUCHU_NEW
-  	bool "7 inch 800x480(You Chu)"
-	
 	config TOUCHSCREEN_GSL1680_7INCH_800x480_DEYI_NEW
   	bool "7 inch 800x480(De Yi)"
-	
-	config TOUCHSCREEN_GSL1680_7INCH_800x480_YOUCHU_YISENG_NEW
-  	bool "7 inch 800x480(You Chu)(customer: Yi Seng)"
 	
 	config TOUCHSCREEN_GSL1680_7INCH_800x480_HAOYUAN_NEW
   	bool "7 inch 800x480(Hao Yuan)"
 	
-	config TOUCHSCREEN_GSL1680_7INCH_1024x600_YOUCHU_NEW
-  	bool "7 inch 1024x600(You Chu)"
-	
-	config TOUCHSCREEN_GSL1680_7INCH_1024x600_HAOYUAN_NEW
-  	bool "7 inch 1024x600(Hao Yuan)"
-	
-	config TOUCHSCREEN_GSL1680_7INCH_1024x600_DEYI_NEW
-  	bool "7 inch 1024x600(De Yi)"
-
-	config TOUCHSCREEN_GSL1680_7INCH_1024x600_SHENGHEXIANG_NEW
-  	bool "7 inch 1024x600(Sheng He Xiang)"
-
-	config GSLX680_9INCH_800X480_NEW
-  	bool "9 inch 800x480"
-	
-	config GSLX680_9INCH_800X480_TENGYAO_NEW
-  	bool "9 inch 800x480 (TengYao)"
-	
-	config GSLX680_9INCH_1024X600_NEW
-  	bool "9 inch 1024x600"
-	
-	config GSLX680_8INCH_800X600_NEW
-  	bool "8 inch 800x600"
-
-	config GSLX680_8INCH_1024X600_NEW
-  	bool "8 inch 1024x600"
-
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_XINAGRUIDE_NEW
+  	bool "7 inch 800x480(Xiang Rui De)"
 	
 endchoice	
 

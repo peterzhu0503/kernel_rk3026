@@ -35,6 +35,8 @@
 #include "rockchip_gslX3670_9inch_98v_800x480.h"
 #elif defined(CONFIG_TOUCHSCREEN_GSL3670_9INCH_98v_800x480_YILIDA)
 #include "rockchip_gslX3670_9inch_98v_800x480_YiLiDa.h"
+#elif defined(CONFIG_TOUCHSCREEN_GSL3670_9INCH_98v_800x480_HONGHAI)
+#include "rockchip_gslX3670_9inch_98v_800x480_HongHai.h"
 #elif defined(CONFIG_TOUCHSCREEN_GSL3670_9INCH_98v_1024x600_YOUCHU)
 #include "rockchip_gslX3670_9inch_98v_1024x600_YouChu.h"
 #elif defined(CONFIG_TOUCHSCREEN_GSL3670_8INCH_1024X768_L68)
@@ -759,7 +761,7 @@ static void report_data(struct gsl_ts *ts, u16 x, u16 y, u8 pressure, u8 id)
 	#endif
 		return;
 	}
-	#if defined(CONFIG_TOUCHSCREEN_GSL3670_9INCH_98v_800x480)
+	#if defined(CONFIG_TOUCHSCREEN_GSL3670_9INCH_98v_800x480) || defined(CONFIG_TOUCHSCREEN_GSL3670_9INCH_98v_800x480_HONGHAI)
 	y = SCREEN_MAX_Y-y-1;
 	#endif
 	

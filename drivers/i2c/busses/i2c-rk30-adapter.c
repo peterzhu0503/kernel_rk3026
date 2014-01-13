@@ -87,6 +87,7 @@ enum{
 /* I2C rx data register */
 #define I2C_RXDATA_BASE         0x200
 
+
 static void rk30_show_regs(struct rk30_i2c *i2c)
 {
         int i;

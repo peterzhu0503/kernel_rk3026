@@ -34,4 +34,6 @@ config MACH_RK3028A_FAC
   bool "RK3028A Board for factory"
   select MACH_RK_FAC
 
+config MACH_RK3028A_PHONEPAD_780
+  bool "RK3028A Phonepad 780 Board"
 endchoice

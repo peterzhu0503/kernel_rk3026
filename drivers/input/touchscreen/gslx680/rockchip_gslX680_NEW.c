@@ -43,6 +43,8 @@
 #include "rockchip_gsl1680_7inch_800x480_YouChu_YiSeng.h"
 #elif defined(CONFIG_TOUCHSCREEN_GSL1680_7INCH_800x480_HAOYUAN_NEW)
 #include "rockchip_gsl1680_7inch_800x480_HaoYuan_NEW.h"
+#elif defined(CONFIG_TOUCHSCREEN_GSL1680_7INCH_800x480_XINAGRUIDE_NEW)
+#include "rockchip_gsl1680_7inch_800x480_XiangRuiDe_NEW.h"
 #elif defined(CONFIG_TOUCHSCREEN_GSL1680_7INCH_1024x600_YOUCHU_NEW)
 #include "rockchip_gsl1680_7inch_1024x600_YouChu.h"
 #elif defined(CONFIG_TOUCHSCREEN_GSL1680_7INCH_1024x600_HAOYUAN_NEW)

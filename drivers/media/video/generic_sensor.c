@@ -29,8 +29,12 @@
 *        1. support sensor driver crop by redefine SENSOR_CROP_PERCENT;
 *        2. fix sensor_ops which is independent for driver;
 *        3. support cropcap;
+*v.0.1.c:
+*        1. modify generic_sensor_s_fmt, flash will work everytime when capture
+*v.0.1.d:
+		 1. add some callbacks for icatch
 */
-static int version = KERNEL_VERSION(0,1,0xb);
+static int version = KERNEL_VERSION(0,1,0xd);
 module_param(version, int, S_IRUGO);
 
 
@@ -893,22 +897,21 @@ int generic_sensor_s_fmt(struct v4l2_subdev *sd, struct v4l2_mbus_framefmt *mf)
     winseqe_set_addr = sensor->info_priv.sensor_series+ret;
 
     ret = 0;    
-    if(sensor->info_priv.winseqe_cur_addr->data != winseqe_set_addr->data){
-
-        if (sensor->sensor_cb.sensor_s_fmt_cb_th)
-            ret |= sensor->sensor_cb.sensor_s_fmt_cb_th(client, mf, is_capture);
+    if (sensor->sensor_cb.sensor_s_fmt_cb_th)
+        ret |= sensor->sensor_cb.sensor_s_fmt_cb_th(client, mf, is_capture);
         
-        v4l2ctrl_info = sensor_find_ctrl(sensor->ctrls,V4L2_CID_FLASH); /* ddl@rock-chips.com: v0.1.3 */        
-        if (v4l2ctrl_info!=NULL) {   
-            if (is_capture) { 
-                if ((v4l2ctrl_info->cur_value == 2) || (v4l2ctrl_info->cur_value == 1)) {
-                    generic_sensor_ioctrl(icd, Sensor_Flash, 1);                    
-                }
-            } else {
-                generic_sensor_ioctrl(icd, Sensor_Flash, 0); 
+    v4l2ctrl_info = sensor_find_ctrl(sensor->ctrls,V4L2_CID_FLASH); /* ddl@rock-chips.com: v0.1.3 */        
+    if (v4l2ctrl_info!=NULL) {   
+        if (is_capture) { 
+            if ((v4l2ctrl_info->cur_value == 2) || (v4l2ctrl_info->cur_value == 1)) {
+                generic_sensor_ioctrl(icd, Sensor_Flash, 1);                    
             }
+        } else {
+            generic_sensor_ioctrl(icd, Sensor_Flash, 0); 
         }
-       
+    }
+    
+    if(sensor->info_priv.winseqe_cur_addr->data != winseqe_set_addr->data){       
         ret |= generic_sensor_write_array(client, winseqe_set_addr->data);
         if (ret != 0) {
             SENSOR_TR("set format capability failed");
@@ -950,6 +953,9 @@ int generic_sensor_g_control(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
     struct i2c_client *client = v4l2_get_subdevdata(sd);
     struct generic_sensor *sensor = to_generic_sensor(client);
     struct sensor_v4l2ctrl_info_s *ctrl_info;
+    struct v4l2_ext_control ext_ctrl;
+    struct soc_camera_device *icd = client->dev.platform_data;
+
     int ret = 0;
 
     ctrl_info = sensor_find_ctrl(sensor->ctrls,ctrl->id);
@@ -957,7 +963,19 @@ int generic_sensor_g_control(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
         SENSOR_TR("v4l2_control id(0x%x) is invalidate",ctrl->id);
         ret = -EINVAL;
     } else {
+        ext_ctrl.value = ctrl->value;
+        ext_ctrl.id = ctrl->id;
+        
         ctrl->value = ctrl_info->cur_value;
+        
+        if (ctrl_info->cb) {
+            ret = (ctrl_info->cb)(icd,ctrl_info, &ext_ctrl,false);
+            if(ret == 0)
+                ctrl->value = ctrl_info->cur_value;
+        } else {
+            SENSOR_TR("v4l2_control id(0x%x) callback isn't exist",ctrl->id);
+            ret = -EINVAL;
+        }
     }
 
     return ret;
@@ -982,7 +1000,7 @@ int generic_sensor_s_control(struct v4l2_subdev *sd, struct v4l2_control *ctrl)
         ext_ctrl.value = ctrl->value;
         
         if (ctrl_info->cb) {
-            ret = (ctrl_info->cb)(icd,ctrl_info, &ext_ctrl);
+            ret = (ctrl_info->cb)(icd,ctrl_info, &ext_ctrl,true);
         } else {
             SENSOR_TR("v4l2_control id(0x%x) callback isn't exist",ctrl->id);
             ret = -EINVAL;
@@ -1005,6 +1023,13 @@ int generic_sensor_g_ext_control(struct soc_camera_device *icd , struct v4l2_ext
         ret = -EINVAL;
     } else {
         ext_ctrl->value = ctrl_info->cur_value;
+        if (ctrl_info->cb) {
+            ret = (ctrl_info->cb)(icd,ctrl_info, ext_ctrl,false);
+        } else {
+            SENSOR_TR("v4l2_control id(0x%x) callback isn't exist",ext_ctrl->id);
+            ret = -EINVAL;
+        }
+
     }
 
     return ret;
@@ -1023,7 +1048,7 @@ int generic_sensor_s_ext_control(struct soc_camera_device *icd, struct v4l2_ext_
         ret = -EINVAL;
     } else {        
         if (ctrl_info->cb) {
-            ret = (ctrl_info->cb)(icd,ctrl_info, ext_ctrl);
+            ret = (ctrl_info->cb)(icd,ctrl_info, ext_ctrl,true);
         } else {
             SENSOR_TR("v4l2_ext_control id(0x%x) callback isn't exist",ext_ctrl->id);
             ret = -EINVAL;
@@ -1386,6 +1411,9 @@ int generic_sensor_s_stream(struct v4l2_subdev *sd, int enable)
 
     SENSOR_DG("s_stream: %d %d",enable,sensor->sensor_focus.focus_state);
 	if (enable == 1) {
+	    if(sensor->sensor_cb.sensor_s_stream_cb){
+	        sensor->sensor_cb.sensor_s_stream_cb(sd,enable);
+	    }
 		sensor->info_priv.stream = true;
     	if (sensor->sensor_focus.sensor_wq) {
 			if (sensor->sensor_focus.focus_state == FocusState_Inval) {
@@ -1394,10 +1422,26 @@ int generic_sensor_s_stream(struct v4l2_subdev *sd, int enable)
         }
 	} else if (enable == 0) {
 	    sensor->info_priv.stream = false;
+	    if(sensor->sensor_cb.sensor_s_stream_cb){
+	        sensor->sensor_cb.sensor_s_stream_cb(sd,enable);
+	    }
+
 		if (sensor->sensor_focus.sensor_wq)
             flush_workqueue(sensor->sensor_focus.sensor_wq);
 		
 	}
 	return 0;
 } 
+
+int generic_sensor_enum_framesizes(struct v4l2_subdev *sd, struct v4l2_frmsizeenum *fsize){
+	struct i2c_client *client = v4l2_get_subdevdata(sd);
+    struct generic_sensor *sensor = to_generic_sensor(client);
+
+    if(sensor->sensor_cb.sensor_enum_framesizes){
+        return sensor->sensor_cb.sensor_enum_framesizes(sd,fsize);
+    }else{
+        return -1;
+    }
+
+}
 

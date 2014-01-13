@@ -293,6 +293,36 @@ struct bp_operate bp_aw706_ops = {
 	.resume			= bp_resume,
 	.misc_name		= NULL,
 	.private_miscdev	= NULL,
+#elif defined(CONFIG_MACH_RK3028A_PHONEPAD_780)
+		.name			= "aw706",
+	.bp_id			= BP_ID_AW706,
+	.bp_bus			= BP_BUS_TYPE_UART,		
+	.bp_pid			= 0,	
+	.bp_vid			= 0,	
+	.bp_power		= RK30_PIN3_PC2,//BP_UNKNOW_DATA,// 3g_power
+	.bp_en			= RK30_PIN3_PC0,	// RK2928_PIN3_PC5,//BP_UNKNOW_DATA,	// 3g_en
+	.bp_reset		= BP_UNKNOW_DATA,//BP_UNKNOW_DATA,	// RK2928_PIN0_PB6,
+	.ap_ready		= BP_UNKNOW_DATA,//RK30_PIN1_PB5,//BP_UNKNOW_DATA,	// RK2928_PIN0_PD0,	//
+	.bp_ready		= BP_UNKNOW_DATA,//RK30_PIN3_PD0,//BP_UNKNOW_DATA,	// RK2928_PIN0_PD6,
+	.ap_wakeup_bp	= RK30_PIN3_PC4,//BP_UNKNOW_DATA,	// RK2928_PIN3_PC4,
+	.bp_wakeup_ap	= RK30_PIN3_PC3,//BP_UNKNOW_DATA,	// RK2928_PIN3_PC3,	//
+	.bp_assert		= RK30_PIN3_PC5,
+	.bp_uart_en		= BP_UNKNOW_DATA, 	//EINT9
+	.bp_usb_en		= BP_UNKNOW_DATA, 	//W_disable
+	.trig				= IRQF_TRIGGER_FALLING,
+
+	.active			= bp_active,
+	.init				= bp_init,
+	.reset			= bp_reset,
+	.ap_wake_bp		= NULL,
+	.bp_wake_ap		= bp_wake_ap,
+	.shutdown		= bp_shutdown,
+	.read_status		= NULL,
+	.write_status		= NULL,
+	.suspend 		= bp_suspend,
+	.resume			= bp_resume,
+	.misc_name		= NULL,
+	.private_miscdev	= NULL,
 #else
 	.name			= "aw706",
 	.bp_id			= BP_ID_AW706,

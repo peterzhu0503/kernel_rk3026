@@ -269,8 +269,12 @@
 *v0.1.3:
 *        1. this version support fov configuration in new_camera_device;
 *        2. Reduce delay time after power off or power down camera;
+*v0.1.5:
+*        1. if sensor power callback failed, power down sensor;
+*v0.1.6:
+		 1. when power down,HWRST just need to set to powerdown mode.
 */
-static int camio_version = KERNEL_VERSION(0,1,3);
+static int camio_version = KERNEL_VERSION(0,1,6);
 module_param(camio_version, int, S_IRUGO);
 
 
@@ -1398,6 +1402,8 @@ static int rk_sensor_ioctrl(struct device *dev,enum rk29camera_ioctrl_cmd cmd, i
                 eprintk("sensor_ioctl_cb.sensor_power_cb is NULL");
                 WARN_ON(1);
 			}
+
+			printk("ret: %d\n",ret);
 			break;
 		}
 		case Cam_Reset:
@@ -1488,9 +1494,13 @@ static int rk_sensor_pwrseq(struct device *dev,int powerup_sequence, int on, int
 
             case SENSOR_PWRSEQ_HWRST:
             {
-                ret = rk_sensor_ioctrl(dev,Cam_Reset, 1);
-                msleep(2);
-                ret |= rk_sensor_ioctrl(dev,Cam_Reset, 0); 
+                if(!on){
+                    rk_sensor_ioctrl(dev,Cam_Reset, 1);
+                }else{
+                    ret = rk_sensor_ioctrl(dev,Cam_Reset, 1);
+                    msleep(2);
+                    ret |= rk_sensor_ioctrl(dev,Cam_Reset, 0); 
+                }
                 if (ret<0) {
                     eprintk("SENSOR_PWRSEQ_HWRST failed");
                 } else {
@@ -1597,7 +1607,8 @@ static int rk_sensor_power(struct device *dev, int on)
         rk_sensor_pwrseq(dev, powerup_sequence, on,mclk_rate);  
     } else {
         if (real_pwroff) {
-            rk_sensor_pwrseq(dev, powerup_sequence, on,mclk_rate);
+            if (rk_sensor_pwrseq(dev, powerup_sequence, on,mclk_rate)<0)    /* ddl@rock-chips.com: v0.1.5 */
+                goto PowerDown;
             
             /*ddl@rock-chips.com: all power down switch to Hi-Z after power off*/
             for(i = 0;i < RK_CAM_NUM; i++) {
@@ -1616,7 +1627,8 @@ static int rk_sensor_power(struct device *dev, int on)
                 new_camera->pwdn_info |= 0x01;
                 new_camera++;
             }
-        } else {            
+        } else {  
+PowerDown:
             rk_sensor_ioctrl(dev,Cam_PowerDown, !on);
 
             rk_sensor_ioctrl(dev,Cam_Mclk, 0);

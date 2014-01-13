@@ -202,7 +202,8 @@ struct bp_operate bp_a85xx_ops = {
 	.bp_id			= BP_ID_A85XX,
 	.bp_bus			= BP_BUS_TYPE_UART,		
 	.bp_pid			= 0,	
-	.bp_vid			= 0,	
+	.bp_vid			= 0,
+#if defined(ONFIG_GPIO_SN7325)
 	.bp_power		= SN7325_OD7, 	// 3g_power
 	.bp_en			= BP_UNKNOW_DATA,	// 3g_en
 	.bp_reset			= BP_UNKNOW_DATA,
@@ -210,6 +211,7 @@ struct bp_operate bp_a85xx_ops = {
 	.bp_ready		= BP_UNKNOW_DATA,
 	.ap_wakeup_bp	= SN7325_OD3,
 	.bp_wakeup_ap	= SN7325_OD2,	//
+#endif
 	.bp_assert		= BP_UNKNOW_DATA,
 	.bp_uart_en		= BP_UNKNOW_DATA, 	//EINT9
 	.bp_usb_en		= BP_UNKNOW_DATA, 	//W_disable

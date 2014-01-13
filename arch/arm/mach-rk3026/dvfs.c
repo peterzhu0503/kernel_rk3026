@@ -78,6 +78,25 @@ static struct notifier_block rk_dvfs_clk_notifier = {
 	.notifier_call = rk_dvfs_clk_notifier_event,
 };
 
+#if defined(CONFIG_MFD_TRS65910)
+static struct cpufreq_frequency_table rk3026_arm_adjust_table_v0[] = {
+	{.frequency = 312 * 1000,       .index = 300 * 1000},
+	{.frequency = 504 * 1000,       .index = 250 * 1000},
+	{.frequency = 816 * 1000,       .index = 150  * 1000},
+	{.frequency = 912 * 1000,       .index = 200 * 1000},
+	{.frequency = 1008 * 1000,       .index = 100 * 1000},
+	{.frequency = CPUFREQ_TABLE_END},
+};
+
+static struct cpufreq_frequency_table rk3026_arm_adjust_table_v1[] = {
+	{.frequency = 312 * 1000,       .index = 350 * 1000},
+	{.frequency = 504 * 1000,       .index = 300 * 1000},
+	{.frequency = 816 * 1000,       .index = 150  * 1000},
+	{.frequency = 912 * 1000,       .index = 200 * 1000},
+	{.frequency = 1008 * 1000,       .index = 100 * 1000},
+	{.frequency = CPUFREQ_TABLE_END},
+};
+#else
 static struct cpufreq_frequency_table rk3026_arm_adjust_table_v0[] = {
 	{.frequency = 312 * 1000,       .index = 250 * 1000},
 	{.frequency = 504 * 1000,       .index = 200 * 1000},
@@ -93,6 +112,7 @@ static struct cpufreq_frequency_table rk3026_arm_adjust_table_v1[] = {
 	{.frequency = 1008 * 1000,       .index = 50 * 1000},
 	{.frequency = CPUFREQ_TABLE_END},
 };
+#endif
 
 #define rk3026_arm_adjust_table_v2 rk3026_arm_adjust_table_v1
 
@@ -107,8 +127,8 @@ static struct cpufreq_frequency_table *rk3026_dvfs_arm_adjust_table[] =
 	rk3026_arm_adjust_table_v0,
 	rk3026_arm_adjust_table_v1,
 	rk3026_arm_adjust_table_v2,
-	rk3026_arm_adjust_table_v3,
-	rk3026_arm_adjust_table_v4,
+	rk3026_arm_adjust_table_v1,
+	rk3026_arm_adjust_table_v1,
 
 };
 
@@ -130,6 +150,7 @@ void adjust_dvfs_table(int soc_version, struct cpufreq_frequency_table *table)
 		for(j = 0; table[j].frequency != CPUFREQ_TABLE_END; j++){
 			if (table[j].frequency == adjust_table[i].frequency){
 				table[j].index += adjust_table[i].index;
+				printk("===liufeng 20131123====adjust_dvfs_table:%d=%d\n", j,table[j].index);
 			}
 		}
 	}

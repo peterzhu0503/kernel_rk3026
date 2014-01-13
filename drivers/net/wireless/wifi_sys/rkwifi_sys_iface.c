@@ -192,7 +192,7 @@ static ssize_t wifi_chip_read(struct class *cls, char *_buf)
     count = sprintf(_buf, "%s", "ESP8089");
     printk("Current WiFi chip is ESP8089.\n");
 #endif
-	
+
     return count;
 }
 
@@ -231,6 +231,11 @@ static ssize_t wifi_p2p_read(struct class *cls, char *_buf)
 #endif
 {
 	int count = 0;
+
+#ifdef CONFIG_BK3515A_COMBO
+	count = sprintf(_buf, "%s", "BK3515A");
+	printk("Current WiFi chip is ESP8089+BK3515A Combo.\n");
+#endif
 
 #ifdef CONFIG_BCM4329
     count = sprintf(_buf, "%s", "false");

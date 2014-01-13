@@ -40,6 +40,7 @@ struct rk29_dma_client mmc_client;
 static int rk_mmc_pre_dma_transfer(struct rk_mmc *host,
 		   		   struct mmc_data *data,
 				   bool next);
+
 #if 0
 static int rk_mmc_show_regs(struct rk_mmc *host)
 {
@@ -546,6 +547,7 @@ static void __rk_mmc_start_request(struct rk_mmc *host, struct mmc_command *cmd)
 		host->bus_test = 1;
 	else
 		host->bus_test = 0;
+	
 	mmc_dbg(host,"start command: CMD%d, ARGR=0x%08x CMDR=0x%08x\n",
 		 	cmd->opcode, cmd->arg, cmdflags);
 	rk_mmc_start_command(host, cmd, cmdflags);
@@ -565,9 +567,17 @@ static void rk_mmc_start_request(struct rk_mmc *host)
 static void rk_mmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
 {
 	struct rk_mmc *host = mmc_priv(mmc);
+	struct mmc_command *cmd;
 
 	WARN_ON(host->mrq);
 	WARN_ON(host->state != STATE_IDLE);
+
+	if(host->shutdown == 1){
+		cmd = mrq->sbc ? mrq->sbc : mrq->cmd;
+		cmd->error = -EIO;	
+		mmc_request_done(host->mmc, mrq);
+		return;
+	}
 
 	spin_lock_bh(&host->lock);
 	host->state = STATE_SENDING_CMD;
@@ -1357,12 +1367,14 @@ static int rk_mmc_probe(struct platform_device *pdev)
 			 MMC_VDD_31_32 | MMC_VDD_32_33 | MMC_VDD_33_34;
 
 	mmc->caps = MMC_CAP_4_BIT_DATA| MMC_CAP_8_BIT_DATA | MMC_CAP_NONREMOVABLE |
-		    MMC_CAP_1_8V_DDR | MMC_CAP_UHS_DDR50 |
 		    MMC_CAP_BUS_WIDTH_TEST |
 		    MMC_CAP_ERASE |
 		    MMC_CAP_CMD23 |
 		    /*MMC_CAP_WAIT_WHILE_BUSY |*/
 		    MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;	
+#ifdef CONFIG_EMMC_DDR_MODE
+	mmc->caps |= MMC_CAP_1_8V_DDR | MMC_CAP_UHS_DDR50;
+#endif
 
 	//mmc->caps2 = MMC_CAP2_CACHE_CTRL;
 
@@ -1409,6 +1421,12 @@ static void rk_mmc_shutdown(struct platform_device *pdev)
 	//struct mmc_host *mmc = host->mmc;
 
 	mmc_info(host, "shutdown\n");
+
+	host->shutdown = 1;
+	//card go pre-idle state
+	mmc_writel(host, CMDARG, 0xF0F0F0F0);
+	mmc_writel(host, CMD, 0 | MMC_CMD_INIT | MMC_CMD_START | MMC_USE_HOLD_REG);
+	mdelay(10);
 #if 0
 	host->shutdown = 1;
 	mmc_remove_host(host->mmc);
