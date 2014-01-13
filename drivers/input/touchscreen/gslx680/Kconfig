@@ -1,0 +1,169 @@
+#
+# Touchscreen driver configuration
+#
+
+menu "gslX680 touchscreen panel support"
+config TOUCHSCREEN_GSL3670
+		tristate "touchscreen used 3670"
+		default n
+choice
+    depends on TOUCHSCREEN_GSL3670
+	prompt  "Touch Screen Select"
+
+
+	config TOUCHSCREEN_GSL3670_8INCH_1024X768_L68
+		bool "touchscreen gsl3670 8 inch 1024x768 for LG-L68"
+				
+	config TOUCHSCREEN_GSL3670_8INCH_800X600_881
+		bool "touchscreen gsl3670 8 inch 800x600 feicu for HRA881"
+
+	config TOUCHSCREEN_GSL3670_9INCH_98v
+		bool "touchscreen gsl3670 9 inch for 98v"
+		
+	config TOUCHSCREEN_GSL3670_9INCH_98v_800x480
+		bool "touchscreen gsl3670 9 inch 800x480 for 98v"
+		
+	config TOUCHSCREEN_GSL3670_9INCH_98v_800x480_YILIDA
+		bool "touchscreen gsl3670 9 inch 800x480 (YiLiDa)for 98v"
+		
+	config TOUCHSCREEN_GSL3670_9INCH_98v_1024x600_YOUCHU
+		bool "touchscreen gsl3670 9 inch 1024x600 (YouChu) for 98v"
+  	
+	config TOUCHSCREEN_GSL3670_9INCH_98v_1024x768
+		bool "touchscreen gsl3670 9 inch 1024x768 for 98v"
+  	
+endchoice			
+config TOUCHSCREEN_GSLX680
+	tristate "gslX680 touchscreen panel support"
+	depends on I2C2_RK29 || I2C2_RK30
+
+comment "Touchscreen hardware drivers"
+	depends on TOUCHSCREEN_GSLX680
+	
+choice
+    depends on TOUCHSCREEN_GSLX680
+	prompt  "Touch Screen Select"
+
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_LEHENG
+  	bool "7 inch 800x480(Le Heng)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_SHENGHEXIANG
+  	bool "7 inch 800x480(Sheng He Xiang)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_SHENGHEXIANG_QLT
+  	bool "7 inch 800x480(Sheng He Xiang for QiLeTong)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_YOUCHU
+  	bool "7 inch 800x480(You Chu)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_DEYI
+  	bool "7 inch 800x480(De Yi)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_YOUCHU_YISENG
+  	bool "7 inch 800x480(You Chu)(customer: Yi Seng)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_HAOYUAN
+  	bool "7 inch 800x480(Hao Yuan)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_1024x600_YOUCHU
+  	bool "7 inch 1024x600(You Chu)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_1024x600_HAOYUAN
+  	bool "7 inch 1024x600(Hao Yuan)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_1024x600_DEYI
+  	bool "7 inch 1024x600(De Yi)"
+
+	config TOUCHSCREEN_GSL1680_7INCH_1024x600_SHENGHEXIANG
+  	bool "7 inch 1024x600(Sheng He Xiang)"
+
+	config TOUCHSCREEN_GSL1680_7INCH_1024x600_FEICHU
+  	bool "7 inch 1024x600(Fei Chu)"
+
+	config TOUCHSCREEN_GSL1680_7INCH_1024x600_AOPUDUN
+  	bool "7 inch 1024x600(AoPuDun/YongXin)"
+
+	config GSLX680_9INCH_800X480
+  	bool "9 inch 800x480"
+	
+	config GSLX680_9INCH_800X480_TENGYAO
+  	bool "9 inch 800x480 (TengYao)"
+	
+	config GSLX680_9INCH_1024X600
+  	bool "9 inch 1024x600"
+	
+	config GSLX680_8INCH_800X600
+  	bool "8 inch 800x600"
+
+	config GSLX680_8INCH_1024X600
+  	bool "8 inch 1024x600"
+
+	
+endchoice	
+
+
+
+config TOUCHSCREEN_GSL1680_NEW
+	tristate "gslX680 touchscreen panel support"
+	depends on I2C2_RK29 || I2C2_RK30
+
+comment "Touchscreen hardware drivers"
+	depends on TOUCHSCREEN_GSL1680_NEW
+	
+choice
+    depends on TOUCHSCREEN_GSL1680_NEW
+	prompt  "Touch Screen Select"
+
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_LEHENG_NEW
+  	bool "7 inch 800x480(Le Heng)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_SHENGHEXIANG_NEW
+  	bool "7 inch 800x480(Sheng He Xiang)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_SHENGHEXIANG_QLT_NEW
+  	bool "7 inch 800x480(Sheng He Xiang for QiLeTong)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_YOUCHU_NEW
+  	bool "7 inch 800x480(You Chu)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_DEYI_NEW
+  	bool "7 inch 800x480(De Yi)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_YOUCHU_YISENG_NEW
+  	bool "7 inch 800x480(You Chu)(customer: Yi Seng)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_800x480_HAOYUAN_NEW
+  	bool "7 inch 800x480(Hao Yuan)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_1024x600_YOUCHU_NEW
+  	bool "7 inch 1024x600(You Chu)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_1024x600_HAOYUAN_NEW
+  	bool "7 inch 1024x600(Hao Yuan)"
+	
+	config TOUCHSCREEN_GSL1680_7INCH_1024x600_DEYI_NEW
+  	bool "7 inch 1024x600(De Yi)"
+
+	config TOUCHSCREEN_GSL1680_7INCH_1024x600_SHENGHEXIANG_NEW
+  	bool "7 inch 1024x600(Sheng He Xiang)"
+
+	config GSLX680_9INCH_800X480_NEW
+  	bool "9 inch 800x480"
+	
+	config GSLX680_9INCH_800X480_TENGYAO_NEW
+  	bool "9 inch 800x480 (TengYao)"
+	
+	config GSLX680_9INCH_1024X600_NEW
+  	bool "9 inch 1024x600"
+	
+	config GSLX680_8INCH_800X600_NEW
+  	bool "8 inch 800x600"
+
+	config GSLX680_8INCH_1024X600_NEW
+  	bool "8 inch 1024x600"
+
+	
+endchoice	
+
+endmenu
+
