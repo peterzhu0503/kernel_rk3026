@@ -134,7 +134,7 @@ static int tps65910_rtc_readtime(struct device *dev, struct rtc_time *tm)
 	} while (++count < RTC_GET_TIME_RETRIES);
 	dev_err(dev, "Timed out reading current time\n");
 
-	return 0;
+	return -EIO;
 
 }
 
