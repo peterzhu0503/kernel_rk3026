@@ -18,7 +18,6 @@
 #include <linux/init.h>
 #include <linux/slab.h>
 #include <linux/i2c.h>
-#include <linux/hardirq.h>
 #include <linux/gpio.h>
 #include <linux/mfd/core.h>
 #include <linux/mfd/tps65910.h>
@@ -80,11 +79,9 @@ static int tps65910_i2c_write(struct tps65910 *tps65910, u8 reg,
 	u8 msg[TPS65910_MAX_REGISTER + 1];
 	int ret;
 	//int i;
-
+	
 	if (bytes > TPS65910_MAX_REGISTER)
-	{
 		return -EINVAL;
-	}
 	
 	msg[0] = reg;
 	memcpy(&msg[1], src, bytes);
@@ -161,7 +158,7 @@ int tps65910_bulk_read(struct tps65910 *tps65910, u8 reg,
 		     int count, u8 *buf)
 {
 	int ret;
-	int i = 0;
+
 	mutex_lock(&tps65910->io_mutex);
 	
 	ret = tps65910->read(tps65910, reg, count, buf);
@@ -176,9 +173,11 @@ int tps65910_bulk_write(struct tps65910 *tps65910, u8 reg,
 		     int count, u8 *buf)
 {
 	int ret;
-	int i = 0;
+
 	mutex_lock(&tps65910->io_mutex);
+	
 	ret = tps65910->write(tps65910, reg, count, buf);
+
 	mutex_unlock(&tps65910->io_mutex);
 
 	return ret;
@@ -324,6 +323,7 @@ int tps65910_device_shutdown(void)
                 printk(KERN_ERR "Unable to read TPS65910_REG_DCDCCTRL reg\n");
                 return -EIO;
         }
+	
 	val |= DEVCTRL_DEV_OFF_MASK;
 	val &= ~DEVCTRL_CK32K_CTRL_MASK;	//keep rtc
 	err = tps65910_reg_write(tps65910, TPS65910_DEVCTRL, val);
